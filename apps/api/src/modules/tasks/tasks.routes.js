@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { authenticate } from '../../common/middleware/authenticate.js';
+import { validateBody, validateParams, validateQuery } from '../../common/middleware/validate.js';
+import { createTask, deleteTask, getTask, listTasks, updateTask } from './tasks.controller.js';
+import { createTaskSchema, listTasksQuerySchema, projectTaskParamsSchema, taskIdParamsSchema, updateTaskSchema, } from './tasks.schemas.js';
+export const taskNestedRouter = Router({ mergeParams: true });
+taskNestedRouter.get('/', authenticate, validateParams(projectTaskParamsSchema), validateQuery(listTasksQuerySchema), listTasks);
+taskNestedRouter.post('/', authenticate, validateParams(projectTaskParamsSchema), validateBody(createTaskSchema), createTask);
+export const tasksRouter = Router();
+tasksRouter.get('/:id', authenticate, validateParams(taskIdParamsSchema), getTask);
+tasksRouter.patch('/:id', authenticate, validateParams(taskIdParamsSchema), validateBody(updateTaskSchema), updateTask);
+tasksRouter.delete('/:id', authenticate, validateParams(taskIdParamsSchema), deleteTask);

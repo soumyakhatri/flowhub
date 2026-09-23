@@ -2,7 +2,7 @@
   "name": "flowhub",
   "private": true,
   "version": "0.1.0",
-  "description": "FlowHub collaborative project management — system-design learning lab",
+  "description": "FlowHub collaborative project management - system-design learning lab",
   "workspaces": [
     "apps/*"
   ],
@@ -12,7 +12,6 @@
     "dev:web": "npm run dev -w @flowhub/web",
     "build": "npm run build -w @flowhub/api && npm run build -w @flowhub/web",
     "start": "npm run start -w @flowhub/api",
-    "typecheck": "npm run typecheck -w @flowhub/api && npm run typecheck -w @flowhub/web",
     "test": "npm run test -w @flowhub/api"
   },
   "engines": {

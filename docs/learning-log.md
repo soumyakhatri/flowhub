@@ -52,7 +52,7 @@ Phase 0 had a domain model and API sketch, but nothing ran. Starting with micros
 Documentation only: domain hierarchy, MongoDB collections and indexes, and the /api/v1 endpoint list.
 
 ### Architecture after
-apps/api is an Express + TypeScript modular monolith backed by MongoDB (Mongoose). One process, one database. Controllers stay thin; services own authorization and writes. Errors are { error: { code, message, requestId } }.
+apps/api is an Express + JavaScript (ESM) modular monolith backed by MongoDB (Mongoose). One process, one database. Controllers stay thin; services own authorization and writes. Errors are { error: { code, message, requestId } }.
 
 ### Why the change was necessary
 A single codebase lets module boundaries and role checks be exercised with normal function calls and one database. That is the right cost until a concrete scaling or isolation problem shows up.

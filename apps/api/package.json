@@ -2,13 +2,14 @@
   "name": "@flowhub/api",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "FlowHub modular monolith API",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/index.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "node --watch src/index.js",
+    "build": "node -e \"console.log('No build step for JS API')\"",
+    "start": "node src/index.js",
+    "lint": "node --check src/index.js",
     "test": "vitest run"
   },
   "engines": {
@@ -28,15 +29,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/cookie-parser": "^1.4.8",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.10.7",
     "pino-pretty": "^13.0.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
     "vitest": "^3.0.4"
   }
 }

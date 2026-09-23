@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { authenticate } from '../../common/middleware/authenticate.js';
+import { validateBody, validateParams, validateQuery } from '../../common/middleware/validate.js';
+import { paginationQuerySchema } from '../../common/utils/pagination.js';
+import { addMember, createOrganization, getOrganization, listOrganizations } from './organizations.controller.js';
+import { addOrganizationMemberSchema, createOrganizationSchema, organizationIdParamsSchema, } from './organizations.schemas.js';
+export const organizationsRouter = Router();
+organizationsRouter.post('/', authenticate, validateBody(createOrganizationSchema), createOrganization);
+organizationsRouter.get('/', authenticate, validateQuery(paginationQuerySchema), listOrganizations);
+organizationsRouter.get('/:id', authenticate, validateParams(organizationIdParamsSchema), getOrganization);
+organizationsRouter.post('/:id/members', authenticate, validateParams(organizationIdParamsSchema), validateBody(addOrganizationMemberSchema), addMember);

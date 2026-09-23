@@ -25,8 +25,8 @@ See [architecture/01-system-overview.md](./architecture/01-system-overview.md) a
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | React, TypeScript, Vite, React Router, TanStack Query, Tailwind |
-| Backend | Node.js, TypeScript, Express |
+| Frontend | React, JavaScript (ESM), Vite, React Router, TanStack Query, Tailwind |
+| Backend | Node.js, JavaScript (ESM), Express |
 | Database | MongoDB (Mongoose) |
 | Auth | Access JWT + rotating refresh tokens (hashed at rest) |
 
@@ -96,7 +96,6 @@ npm run dev:web
 
 ```bash
 npm test
-npm run typecheck
 ```
 
 ## Architecture documentation

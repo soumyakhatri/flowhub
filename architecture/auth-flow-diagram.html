@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flowhub — Authentication Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --bg-elevated: #171e26;
+      --bg-node: #1c2530;
+      --border: #2a3644;
+      --text: #e8eef4;
+      --muted: #8b9aab;
+      --web: #3db8a0;
+      --web-dim: rgba(61, 184, 160, 0.15);
+      --api: #5b8def;
+      --api-dim: rgba(91, 141, 239, 0.15);
+      --db: #e0a045;
+      --db-dim: rgba(224, 160, 69, 0.15);
+      --danger: #e06b6b;
+      --danger-dim: rgba(224, 107, 107, 0.12);
+      --line: #3d4d60;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Sora", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(61, 184, 160, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 0%, rgba(91, 141, 239, 0.1), transparent),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+
+    header p {
+      color: var(--muted);
+      max-width: 40rem;
+      font-size: 0.95rem;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      margin-top: 1.25rem;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    .swatch.web { background: var(--web); }
+    .swatch.api { background: var(--api); }
+    .swatch.db { background: var(--db); }
+
+    section.flow {
+      margin-bottom: 2.75rem;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    section.flow:nth-of-type(1) { animation-delay: 0.15s; }
+    section.flow:nth-of-type(2) { animation-delay: 0.25s; }
+    section.flow:nth-of-type(3) { animation-delay: 0.35s; }
+    section.flow:nth-of-type(4) { animation-delay: 0.45s; }
+
+    .flow-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .flow-title .num {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--web);
+      background: var(--web-dim);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .flow-title h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .flow-title .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .node {
+      flex: 1 1 140px;
+      min-width: 130px;
+      max-width: 200px;
+      background: var(--bg-node);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 0.9rem;
+      position: relative;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .node:hover {
+      transform: translateY(-2px);
+      border-color: #4a5d73;
+    }
+
+    .node.web { border-top: 3px solid var(--web); }
+    .node.api { border-top: 3px solid var(--api); }
+    .node.db { border-top: 3px solid var(--db); }
+    .node.danger { border-top: 3px solid var(--danger); background: var(--danger-dim); }
+
+    .node .layer {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+
+    .node.web .layer { color: var(--web); }
+    .node.api .layer { color: var(--api); }
+    .node.db .layer { color: var(--db); }
+    .node.danger .layer { color: var(--danger); }
+
+    .node .label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .node .detail {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      line-height: 1.4;
+    }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 28px;
+      color: var(--line);
+      font-size: 1.1rem;
+      align-self: center;
+      animation: pulseArrow 2.2s ease-in-out infinite;
+    }
+
+    .arrow span {
+      display: block;
+      line-height: 1;
+    }
+
+    /* Vertical stack for nested detail steps */
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 0.75rem;
+      align-items: start;
+    }
+
+    .stack-row .step {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--api-dim);
+      color: var(--api);
+      border: 1px solid rgba(91, 141, 239, 0.35);
+    }
+
+    .stack-row.web-step .step {
+      background: var(--web-dim);
+      color: var(--web);
+      border-color: rgba(61, 184, 160, 0.35);
+    }
+
+    .stack-row.db-step .step {
+      background: var(--db-dim);
+      color: var(--db);
+      border-color: rgba(224, 160, 69, 0.35);
+    }
+
+    .stack-row strong {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    .stack-row p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .stack-row code {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+
+    /* Split layout for refresh triggers */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .split { grid-template-columns: 1fr; }
+      .arrow {
+        flex: 0 0 100%;
+        transform: rotate(90deg);
+        height: 24px;
+        padding: 0.25rem 0;
+      }
+      .node { max-width: none; }
+      .flow-title .hint { display: none; }
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+
+    .card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card ul {
+      list-style: none;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .card li {
+      padding: 0.3rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .card li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--web);
+      font-size: 0.75rem;
+    }
+
+    .token-key {
+      display: inline-grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      margin-top: 1rem;
+      width: 100%;
+      font-size: 0.8rem;
+    }
+
+    .token-key dt {
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--web);
+      white-space: nowrap;
+    }
+
+    .token-key dd { color: var(--muted); }
+
+    footer {
+      margin-top: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      animation: fadeUp 0.5s ease 0.5s both;
+    }
+
+    footer code {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--text);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseArrow {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Flowhub authentication flow</h1>
+      <p>
+        End-to-end path from login to protected APIs, token refresh, and logout.
+        Colors show where work happens: browser, Express API, or MongoDB.
+      </p>
+      <div class="legend">
+        <span><i class="swatch web"></i> Frontend (React / browser)</span>
+        <span><i class="swatch api"></i> Backend (Express)</span>
+        <span><i class="swatch db"></i> Database (MongoDB)</span>
+      </div>
+    </header>
+
+    <!-- 1. LOGIN / REGISTER -->
+    <section class="flow">
+      <div class="flow-title">
+        <span class="num">01</span>
+        <h2>Login / Register</h2>
+        <span class="hint">POST /api/v1/auth/login · /register</span>
+      </div>
+
+      <div class="pipeline">
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">Login form</div>
+          <div class="detail">email + password</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">Controller</div>
+          <div class="detail">validate body</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">Service</div>
+          <div class="detail">bcrypt verify / hash</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node db">
+          <div class="layer">DB</div>
+          <div class="label">users</div>
+          <div class="detail">find / create</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">issueSession</div>
+          <div class="detail">sign JWTs</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node db">
+          <div class="layer">DB</div>
+          <div class="label">refresh_tokens</div>
+          <div class="detail">store SHA-256 hash</div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="stack-row api-step">
+          <div class="step">A</div>
+          <div>
+            <strong>Response to browser</strong>
+            <p>
+              JSON: <code>{ user, accessToken }</code> ·
+              Cookie: <code>refreshToken</code> (httpOnly, path <code>/api/v1/auth</code>)
+            </p>
+          </div>
+        </div>
+        <div class="stack-row web-step">
+          <div class="step">B</div>
+          <div>
+            <strong>Frontend stores access token</strong>
+            <p>
+              <code>client.js</code> → memory + <code>localStorage["flowhub.accessToken"]</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PROTECTED CALL -->
+    <section class="flow">
+      <div class="flow-title">
+        <span class="num">02</span>
+        <h2>Protected API call</h2>
+        <span class="hint">e.g. GET /users/me · /organizations</span>
+      </div>
+
+      <div class="pipeline">
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">api()</div>
+          <div class="detail">Authorization: Bearer</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">authenticate</div>
+          <div class="detail">verifyAccessToken</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">req.user</div>
+          <div class="detail">{ id, email }</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">Controller</div>
+          <div class="detail">CRUD as usual</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node db">
+          <div class="layer">DB</div>
+          <div class="label">Mongo</div>
+          <div class="detail">read / write data</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">UI updates</div>
+          <div class="detail">200 JSON</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. REFRESH -->
+    <section class="flow">
+      <div class="flow-title">
+        <span class="num">03</span>
+        <h2>Refresh access token</h2>
+        <span class="hint">POST /api/v1/auth/refresh</span>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <h3>When is it called?</h3>
+          <ul>
+            <li>App startup — <code>AuthProvider</code> restore()</li>
+            <li>Any API returns <code>401</code> — auto-retry once</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Purpose</h3>
+          <ul>
+            <li>Access JWT expired (~15m) — get a new one</li>
+            <li>Stay logged in without re-entering password</li>
+            <li>Rotate refresh token (old one revoked)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pipeline" style="margin-top: 1rem;">
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">refreshSession</div>
+          <div class="detail">credentials: include</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">read cookie</div>
+          <div class="detail">refreshToken</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">verify JWT</div>
+          <div class="detail">+ lookup hash</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node db">
+          <div class="layer">DB</div>
+          <div class="label">revoke old</div>
+          <div class="detail">revokedAt = now</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">issueSession</div>
+          <div class="detail">new token pair</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">setAccessToken</div>
+          <div class="detail">retry original call</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. LOGOUT -->
+    <section class="flow">
+      <div class="flow-title">
+        <span class="num">04</span>
+        <h2>Logout</h2>
+        <span class="hint">POST /api/v1/auth/logout</span>
+      </div>
+
+      <div class="pipeline">
+        <div class="node web">
+          <div class="layer">Web</div>
+          <div class="label">logout()</div>
+          <div class="detail">user clicks sign out</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">auth.service</div>
+          <div class="detail">revoke refresh hash</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node db">
+          <div class="layer">DB</div>
+          <div class="label">refresh_tokens</div>
+          <div class="detail">revokedAt set</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node api">
+          <div class="layer">API</div>
+          <div class="label">clear cookie</div>
+          <div class="detail">204 No Content</div>
+        </div>
+        <div class="arrow"><span>→</span></div>
+        <div class="node danger">
+          <div class="layer">Web</div>
+          <div class="label">clearSession</div>
+          <div class="detail">wipe localStorage</div>
+        </div>
+      </div>
+
+      <dl class="token-key">
+        <dt>Access token</dt>
+        <dd>Short-lived JWT · Bearer header · memory + localStorage</dd>
+        <dt>Refresh token</dt>
+        <dd>Long-lived JWT · httpOnly cookie · hashed in Mongo · used only for /auth/refresh</dd>
+      </dl>
+    </section>
+
+    <footer>
+      Open this file in a browser:
+      <code>architecture/auth-flow-diagram.html</code>
+      · Matches Flowhub dual-JWT auth (access + refresh rotation)
+    </footer>
+  </div>
+</body>
+</html>
