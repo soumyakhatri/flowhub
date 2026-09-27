@@ -81,4 +81,5 @@ This diagram is a **destination**, not a starting point. Building it prematurely
 - [04-api-design.md](./04-api-design.md)
 - [00-architecture-fundamentals.md](./00-architecture-fundamentals.md)
 - [ROADMAP.md](./ROADMAP.md)
+- [progress.html](./progress.html)
 - [adr/](./adr/)

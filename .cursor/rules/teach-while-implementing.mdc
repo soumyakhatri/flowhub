@@ -1,0 +1,25 @@
+---
+description: Primary goal is teaching system design inside a production-ready project
+alwaysApply: true
+---
+
+# Teach system design
+
+The primary goal of FlowHub is to teach system design. The codebase is the classroom: production-ready structure, real trade-offs, and code that could run for users. Shipping a feature without the lesson misses the goal. A toy that only illustrates a diagram misses it too.
+
+Implementing a concept is not enough. Teach it in the same turn.
+
+When you introduce or change a concept (architecture, protocol, data model, auth, caching, queues, and so on):
+
+1. Name the concept in plain language before or alongside the code.
+2. Explain the problem it solves in FlowHub, how this implementation works, and the trade-off.
+3. Point at the files or functions that carry the idea, with a short walkthrough a learner can follow.
+4. Keep the explanation tied to what you just built. Skip a separate lecture that does not match the change.
+5. Write that same explanation into `docs/what-we-learned.md` in the same change. Add an index line and a section at the bottom: the problem, how this code works, the files, and the trade-off. The chat explanation is required too. Do not leave the lesson only in chat.
+
+After a major phase, also update `docs/learning-log.md`, `architecture/ROADMAP.md`, and `architecture/progress.html` together. The learning log is the phase checklist. `docs/what-we-learned.md` is the explanation the learner rereads.
+
+```text
+Bad: "Added refresh-token rotation." then only a diff.
+Good: "Refresh tokens are stored as hashes so a stolen database cannot be replayed as logins. Rotation means each refresh issues a new token and revokes the old one. The check lives in auth.service.js: if a revoked token is presented again, remaining tokens for that user are revoked."
+```

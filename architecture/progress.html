@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FlowHub — Progress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --bg-elevated: #171e26;
+      --bg-node: #1c2530;
+      --border: #2a3644;
+      --text: #e8eef4;
+      --muted: #8b9aab;
+      --web: #3db8a0;
+      --web-dim: rgba(61, 184, 160, 0.15);
+      --api: #5b8def;
+      --api-dim: rgba(91, 141, 239, 0.15);
+      --db: #e0a045;
+      --db-dim: rgba(224, 160, 69, 0.15);
+      --danger: #e06b6b;
+      --line: #3d4d60;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Sora", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(61, 184, 160, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 0%, rgba(91, 141, 239, 0.1), transparent),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .page { max-width: 1100px; margin: 0 auto; }
+
+    header { margin-bottom: 2rem; }
+
+    .kicker {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--web);
+      margin-bottom: 0.55rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.45rem;
+    }
+
+    header p { color: var(--muted); max-width: 42rem; font-size: 0.95rem; }
+
+    header a { color: var(--api); text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 1.5rem 0 1rem;
+    }
+
+    .stat {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+    }
+
+    .stat b {
+      display: block;
+      font-size: 1.45rem;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .stat span { color: var(--muted); font-size: 0.78rem; }
+
+    .stat.done b { color: var(--web); }
+    .stat.next b { color: var(--db); font-size: 1.05rem; padding-top: 0.2rem; }
+
+    .bar {
+      height: 8px;
+      background: var(--bg-node);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 9.09%;
+      background: linear-gradient(90deg, var(--web), #7dceb8);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filters button {
+      font: inherit;
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.8rem;
+      cursor: pointer;
+    }
+
+    .filters button[aria-pressed="true"] {
+      color: var(--text);
+      background: var(--api-dim);
+      border-color: var(--api);
+    }
+
+    .next {
+      background: var(--db-dim);
+      border: 1px solid rgba(224, 160, 69, 0.35);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .next strong { color: var(--db); }
+    .next p { color: var(--muted); font-size: 0.88rem; margin-top: 0.25rem; }
+
+    .phases { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    article {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.05rem 1.05rem;
+    }
+
+    article[hidden] { display: none; }
+
+    .row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .num {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+    }
+
+    h2 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; }
+
+    .badge {
+      flex-shrink: 0;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.25rem 0.55rem;
+    }
+
+    .badge.complete { color: var(--web); background: var(--web-dim); }
+    .badge.pending { color: var(--muted); background: rgba(139, 154, 171, 0.12); }
+
+    .why { color: var(--muted); font-size: 0.88rem; margin: 0.45rem 0 0.7rem; }
+
+    ul { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+
+    li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      font-size: 0.88rem;
+    }
+
+    li .mark {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      min-width: 4.6rem;
+      color: var(--muted);
+    }
+
+    li.done .mark { color: var(--web); }
+    li.partial .mark { color: var(--db); }
+    li.wait .mark { color: var(--muted); }
+
+    .note {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .links { margin-top: 0.65rem; display: flex; flex-wrap: wrap; gap: 0.45rem 0.9rem; }
+    .links a { color: var(--api); font-size: 0.8rem; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+
+    .gate {
+      margin-top: 2rem;
+      background: var(--bg-node);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.15rem;
+    }
+
+    .gate h2 { margin-bottom: 0.45rem; }
+    .gate ol { margin: 0.4rem 0 0 1.15rem; color: var(--muted); font-size: 0.9rem; }
+    .gate p { color: var(--muted); font-size: 0.88rem; margin-top: 0.7rem; }
+
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="kicker">FlowHub · system design lab</p>
+      <h1>Progress</h1>
+      <p>
+        Done and pending for the 22-phase plan. This page stays in step with
+        <a href="./ROADMAP.md">ROADMAP.md</a> and
+        <a href="../docs/learning-log.md">docs/learning-log.md</a>.
+        When a phase changes, update all three. Concept explanations live in
+        <a href="../docs/what-we-learned.md">docs/what-we-learned.md</a>.
+      </p>
+      <div class="meta">
+        <span>Updated 27 Sep 2026</span>
+        <span>Current stage: Phase 0–1 complete</span>
+        <span>Stack: React → Express → MongoDB</span>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat done"><b>2</b><span>Complete</span></div>
+      <div class="stat"><b>20</b><span>Not started</span></div>
+      <div class="stat next"><b>Phase 2</b><span>Next: Production Hardening</span></div>
+    </div>
+    <div class="bar" role="img" aria-label="2 of 22 phases complete"><i></i></div>
+
+    <div class="next">
+      <strong>Next up — Phase 2, Production Hardening.</strong>
+      <p>Rate limiting is still open. Validation, errors, logging, pagination, and indexes already exist because Phase 1 needed them. Tests and security are only partly in place.</p>
+    </div>
+
+    <div class="filters" role="group" aria-label="Filter phases">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="complete" aria-pressed="false">Complete</button>
+      <button type="button" data-filter="pending" aria-pressed="false">Pending</button>
+    </div>
+
+    <div class="phases">
+      <article data-status="complete">
+        <div class="row">
+          <div>
+            <p class="num">Phase 0</p>
+            <h2>Architecture Fundamentals</h2>
+          </div>
+          <span class="badge complete">Complete</span>
+        </div>
+        <p class="why">Shared vocabulary before any production code, so later tools are chosen for a concrete problem.</p>
+        <ul>
+          <li class="done"><span class="mark">Done</span><span>Scalability, availability, latency, throughput, CAP, consistency</span></li>
+          <li class="done"><span class="mark">Done</span><span>Horizontal vs vertical scaling, load balancing, caching, queues, pub/sub</span></li>
+          <li class="done"><span class="mark">Done</span><span>Architecture docs, ADRs for the monolith and MongoDB, learning log, roadmap</span></li>
+        </ul>
+        <div class="links">
+          <a href="./00-architecture-fundamentals.md">Fundamentals</a>
+          <a href="./01-system-overview.md">System overview</a>
+          <a href="./adr/ADR-001-modular-monolith.md">ADR-001</a>
+          <a href="./adr/ADR-002-mongodb.md">ADR-002</a>
+        </div>
+      </article>
+
+      <article data-status="complete">
+        <div class="row">
+          <div>
+            <p class="num">Phase 1</p>
+            <h2>Modular Monolith</h2>
+          </div>
+          <span class="badge complete">Complete</span>
+        </div>
+        <p class="why">One Express process and one MongoDB database, with domain modules instead of microservices.</p>
+        <ul>
+          <li class="done"><span class="mark">Done</span><span>Authentication: 15-minute access JWT, rotating refresh token in an httpOnly cookie, hashed at rest</span></li>
+          <li class="done"><span class="mark">Done</span><span>Organizations, workspaces, projects, tasks, comments</span></li>
+          <li class="done"><span class="mark">Done</span><span>React client and Express API in JavaScript (ESM)</span></li>
+          <li class="done"><span class="mark">Done</span><span>Health and readiness, request IDs, startup config validation</span></li>
+        </ul>
+        <div class="links">
+          <a href="./05-modular-monolith.md">Module layout</a>
+          <a href="./auth-flow-diagram.html">Auth flow</a>
+          <a href="./adr/ADR-003-javascript-esm.md">ADR-003</a>
+          <a href="../docs/learning-log.md">Learning log</a>
+          <a href="../docs/what-we-learned.md">What we learned</a>
+        </div>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 2</p>
+            <h2>Production Hardening</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">The phase is still open on the roadmap. Several items already shipped inside Phase 1.</p>
+        <ul>
+          <li class="done"><span class="mark">In place</span><span>Validation (Zod)</span></li>
+          <li class="done"><span class="mark">In place</span><span>Error handling</span></li>
+          <li class="done"><span class="mark">In place</span><span>Logging (pino)</span></li>
+          <li class="done"><span class="mark">In place</span><span>Pagination</span></li>
+          <li class="done"><span class="mark">In place</span><span>Indexing</span></li>
+          <li class="partial"><span class="mark">Partial</span><span>Security — helmet, CORS, and hashed refresh cookies exist; no dedicated hardening pass yet</span></li>
+          <li class="partial"><span class="mark">Partial</span><span>Tests — unit tests for password, pagination, and AppError only</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Rate limiting</span></li>
+        </ul>
+        <p class="note">Status stays “Not started” until this phase is closed in ROADMAP.md. Do not start Phase 3 to get rate limiting early.</p>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 3</p>
+            <h2>Redis</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Caching, shared rate limiting, and distributed coordination once one process is no longer enough.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Caching</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Rate limiting</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Distributed coordination</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 4</p>
+            <h2>Horizontal Scaling</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">More than one API instance, without rewriting business logic.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Multiple API instances</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Load balancer</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Health checks and graceful shutdown</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 5</p>
+            <h2>WebSockets</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Real-time collaboration on a single API instance first.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Real-time collaboration</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Presence</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Typing indicators</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 6</p>
+            <h2>Redis Pub/Sub</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Fan WebSocket events across API instances.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Cross-instance WebSocket delivery</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 7</p>
+            <h2>Background Jobs</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Work that should not block the request: email, retries, schedules.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>BullMQ workers</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Retries and backoff</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Scheduled jobs</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 8</p>
+            <h2>AWS SQS</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">A managed queue with its own failure rules, after in-process jobs are understood.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>SQS</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Dead-letter queue</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Visibility timeout and retry strategy</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 9</p>
+            <h2>Event-Driven Architecture</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Domain events so modules stop calling each other for side effects.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Domain events</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 10</p>
+            <h2>Kafka</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">A durable log once events need replay, ordering, and independent consumers.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Topics, partitions, consumer groups, offsets</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Ordering, replay, consumer lag</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 11</p>
+            <h2>Transactional Outbox</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Publish events only when the database write committed.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Transactional outbox</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 12</p>
+            <h2>Search</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">OpenSearch as an eventually consistent read model.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>OpenSearch</span></li>
+          <li class="wait"><span class="mark">Pending</span><span>Eventual consistency</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 13</p>
+            <h2>CQRS</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Separate read models only where the write model is the wrong shape for queries.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Read models where they earn their place</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 14</p>
+            <h2>Notifications Pipeline</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Deliver notifications without doing that work inside the request.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Scalable notification pipeline</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 15</p>
+            <h2>Activity Feed</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Fan-out choices for “what happened” across orgs, workspaces, and users.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Fan-out strategies</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 16</p>
+            <h2>Distributed Workflows</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">A saga when one user action spans steps that can fail independently.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Saga-style workflow</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 17</p>
+            <h2>Observability</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Traces and metrics once logs and request IDs are not enough.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>OpenTelemetry, Prometheus, Grafana</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 18</p>
+            <h2>Load Testing</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Measure the system that exists, instead of guessing capacity.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>k6</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 19</p>
+            <h2>Microservices</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Extract only the components that have a real isolation or scaling reason.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Selective extraction</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 20</p>
+            <h2>AWS Deployment</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Run the architecture that has been earned, on AWS.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Production deployment</span></li>
+        </ul>
+      </article>
+
+      <article data-status="pending">
+        <div class="row">
+          <div>
+            <p class="num">Phase 21</p>
+            <h2>Kubernetes</h2>
+          </div>
+          <span class="badge pending">Not started</span>
+        </div>
+        <p class="why">Container orchestration after there is something that needs it.</p>
+        <ul>
+          <li class="wait"><span class="mark">Pending</span><span>Orchestration and scaling</span></li>
+        </ul>
+      </article>
+    </div>
+
+    <section class="gate">
+      <h2>Phase gate</h2>
+      <p>Do not skip ahead. Each phase has to answer these before implementation:</p>
+      <ol>
+        <li>What problem appeared?</li>
+        <li>Why is this the right tool?</li>
+        <li>What are the trade-offs?</li>
+        <li>How do we fail and recover?</li>
+        <li>How do we observe it?</li>
+      </ol>
+      <p>Then update this page, ROADMAP.md, and the learning log.</p>
+    </section>
+  </div>
+  <script>
+    const buttons = document.querySelectorAll(".filters button");
+    const cards = document.querySelectorAll(".phases article");
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        buttons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+        cards.forEach((card) => {
+          const show = filter === "all" || card.dataset.status === filter;
+          card.hidden = !show;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

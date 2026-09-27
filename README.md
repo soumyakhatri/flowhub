@@ -36,7 +36,7 @@ See [architecture/01-system-overview.md](./architecture/01-system-overview.md) a
 apps/api          Modular monolith API
 apps/web          React SPA
 architecture/     System design docs, ADRs, roadmap
-docs/             Learning log
+docs/             Learning log and concept explanations
 ```
 
 ## Local setup
@@ -108,8 +108,10 @@ npm test
 | [03-database-design.md](./architecture/03-database-design.md) | MongoDB design |
 | [04-api-design.md](./architecture/04-api-design.md) | REST conventions |
 | [ROADMAP.md](./architecture/ROADMAP.md) | Phase plan |
+| [progress.html](./architecture/progress.html) | Done vs pending board (open in a browser) |
 | [adr/](./architecture/adr/) | Architecture Decision Records |
-| [learning-log.md](./docs/learning-log.md) | Concepts, trade-offs, interview Qs |
+| [what-we-learned.md](./docs/what-we-learned.md) | Explanations of each concept, for rereading |
+| [learning-log.md](./docs/learning-log.md) | Phase checklist, trade-offs, interview Qs |
 
 ## System-design concepts demonstrated so far
 

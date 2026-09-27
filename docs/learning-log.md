@@ -1,6 +1,8 @@
 # FlowHub Learning Log
 
-Personal system-design reference. Updated after each major phase.
+Phase checklist. Updated after each major phase. Phase status also lives in [architecture/ROADMAP.md](../architecture/ROADMAP.md) and [architecture/progress.html](../architecture/progress.html). Update all three together.
+
+The rereadable explanation of each concept lives in [what-we-learned.md](./what-we-learned.md). Update that file when the concept is taught, not only at the end of a phase.
 
 ---
 

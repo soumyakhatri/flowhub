@@ -2,6 +2,8 @@
 
 Progressive evolution. Do not skip ahead without completing prerequisites.
 
+Visual board: [progress.html](./progress.html). When a phase status changes, update this table and that file together, then record the lesson in [docs/learning-log.md](../docs/learning-log.md). Explanations of each concept go in [docs/what-we-learned.md](../docs/what-we-learned.md) as they are taught.
+
 | Phase | Name | Status |
 |-------|------|--------|
 | 0 | Architecture Fundamentals | Complete |
